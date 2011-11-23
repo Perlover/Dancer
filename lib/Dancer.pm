@@ -394,7 +394,7 @@ sub _send_file {
     }
 
     if (exists($options{filename})) {
-        $resp->push_header('Content-Disposition' => 
+        $resp->push_header('Content-Disposition' =>
             "attachment; filename=\"$options{filename}\""
         );
     }
@@ -456,6 +456,7 @@ sub _start {
 
     # Backward compatibility for app.psgi that has sub { Dancer->dance($req) }
     if ($request) {
+        Dancer::Handler->init_request_headers( $request->env );
         return Dancer::Handler->handle_request($request);
     }
 
@@ -650,7 +651,7 @@ Defines a before_template filter:
     before_template sub {
         my $tokens = shift;
         # do something with request, vars or params
-        
+
         # for example, adding a token to the template
         $tokens->{token_name} = "some value";
     };
@@ -738,7 +739,7 @@ Alias for the C<start> keyword.
 Logs a message of debug level:
 
     debug "This is a debug message";
-    
+
 See L<Dancer::Logger> for details on how to configure where log messages go.
 
 =head2 dirname
@@ -1278,7 +1279,7 @@ This makes it possible to nest prefixes:
 
    prefix '/home' => sub {
        ## some routes
-       
+
       prefix '/private' => sub {
          ## here we are under /home/private...
 
