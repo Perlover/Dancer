@@ -457,6 +457,7 @@ sub _start {
 
     # Backward compatibility for app.psgi that has sub { Dancer->dance($req) }
     if ($request) {
+        Dancer::Handler->init_request_headers( $request->env );
         return Dancer::Handler->handle_request($request);
     }
 
