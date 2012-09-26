@@ -41,7 +41,7 @@ sub init {
 
     $tt_config->{INCLUDE_PATH} ||= setting('views');
 
-    $_engine = $class->new(%$tt_config);
+    $_engine = $_engine || $class->new(%$tt_config);
 }
 
 sub render {
