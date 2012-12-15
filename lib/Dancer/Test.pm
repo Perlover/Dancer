@@ -217,7 +217,7 @@ sub response_headers_are_deeply {
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $response = dancer_response(expand_req($req));
-    
+
     is_deeply(
         _sort_headers( $response->headers_to_array ),
         _sort_headers( $expected ),
@@ -258,12 +258,12 @@ sub response_headers_include {
 sub _include_in_headers {
     my ($full_headers, $expected_subset) = @_;
 
-    # walk through all the expected header pairs, make sure 
+    # walk through all the expected header pairs, make sure
     # they exist with the same value in the full_headers list
     # return false as soon as one is not.
     for (my $i=0; $i<scalar(@$expected_subset); $i+=2) {
         my ($name, $value) = ($expected_subset->[$i], $expected_subset->[$i + 1]);
-        return 0 
+        return 0
           unless _check_header($full_headers, $name, $value);
     }
 
@@ -283,6 +283,7 @@ sub _check_header {
 sub dancer_response {
     my ($method, $path, $args) = @_;
     $args ||= {};
+    my $extra_env = {};
 
     if ($method =~ /^(?:PUT|POST)$/) {
 
@@ -330,24 +331,23 @@ Content-Type: text/plain
         my $l = 0;
         $l = length $content if defined $content;
         open my $in, '<', \$content;
-        $ENV{'CONTENT_LENGTH'} = $l;
-        $ENV{'CONTENT_TYPE'}   = $content_type || "";
-        $ENV{'psgi.input'}     = $in;
+        $extra_env->{'CONTENT_LENGTH'} = $l;
+        $extra_env->{'CONTENT_TYPE'}   = $content_type || "";
+        $extra_env->{'psgi.input'}     = $in;
     }
 
     my ($params, $body, $headers) = @$args{qw(params body headers)};
 
-    if ($headers and (my @headers = @$headers)) {
-        while (my $h = shift @headers) {
-            if ($h =~ /content-type/i) {
-                $ENV{'CONTENT_TYPE'} = shift @headers;
-            }
-        }
+    $headers = HTTP::Headers->new(@{$headers||[]})
+        unless _isa($headers, "HTTP::Headers");
+
+    if ($headers->header('Content-Type')) {
+        $extra_env->{'CONTENT_TYPE'} = $headers->header('Content-Type');
     }
 
     my $request = Dancer::Request->new_for_request(
         $method => $path,
-        $params, $body, HTTP::Headers->new(@$headers)
+        $params, $body, $headers, $extra_env
     );
 
     # first, reset the current state
@@ -453,7 +453,7 @@ registry.
 
 =head2 route_doesnt_exist([$method, $path], $test_name)
 
-Asserts that the given request does not match any route handler 
+Asserts that the given request does not match any route handler
 in Dancer's registry.
 
     route_doesnt_exist [GET => '/bogus_path'], "GET /bogus_path is not handled";
@@ -461,7 +461,7 @@ in Dancer's registry.
 
 =head2 response_exists([$method, $path], $test_name)
 
-Asserts that a response is found for the given request (note that even though 
+Asserts that a response is found for the given request (note that even though
 a route for that path might not exist, a response can be found during request
 processing, because of filters).
 
@@ -493,27 +493,27 @@ one given.
 
 Asserts that the response content is equal to the C<$expected> string.
 
-    response_content_is [GET => '/'], "Hello, World", 
+    response_content_is [GET => '/'], "Hello, World",
         "got expected response content for GET /";
 
 =head2 response_content_isnt([$method, $path], $not_expected, $test_name)
 
 Asserts that the response content is not equal to the C<$not_expected> string.
 
-    response_content_isnt [GET => '/'], "Hello, World", 
+    response_content_isnt [GET => '/'], "Hello, World",
         "got expected response content for GET /";
 
 =head2 response_content_is_deeply([$method, $path], $expected_struct, $test_name)
 
-Similar to response_content_is(), except that if response content and 
-$expected_struct are references, it does a deep comparison walking each data 
-structure to see if they are equivalent.  
+Similar to response_content_is(), except that if response content and
+$expected_struct are references, it does a deep comparison walking each data
+structure to see if they are equivalent.
 
 If the two structures are different, it will display the place where they start
 differing.
 
-    response_content_is_deeply [GET => '/complex_struct'], 
-        { foo => 42, bar => 24}, 
+    response_content_is_deeply [GET => '/complex_struct'],
+        { foo => 42, bar => 24},
         "got expected response structure for GET /complex_struct";
 
 =head2 response_content_like([$method, $path], $regexp, $test_name)
@@ -521,7 +521,7 @@ differing.
 Asserts that the response content for the given request matches the regexp
 given.
 
-    response_content_like [GET => '/'], qr/Hello, World/, 
+    response_content_like [GET => '/'], qr/Hello, World/,
         "response content looks good for GET /";
 
 =head2 response_content_unlike([$method, $path], $regexp, $test_name)
@@ -529,7 +529,7 @@ given.
 Asserts that the response content for the given request does not match the regexp
 given.
 
-    response_content_unlike [GET => '/'], qr/Page not found/, 
+    response_content_unlike [GET => '/'], qr/Page not found/,
         "response content looks good for GET /";
 
 =head2 response_headers_are_deeply([$method, $path], $expected, $test_name)
