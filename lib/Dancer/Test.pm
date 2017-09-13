@@ -338,8 +338,7 @@ Content-Type: text/plain
 
     my ($params, $body, $headers) = @$args{qw(params body headers)};
 
-    $headers = HTTP::Headers->new(@{$headers||[]})
-        unless _isa($headers, "HTTP::Headers");
+    $headers = HTTP::Headers->new(@{$headers||[]});
 
     if ($headers->header('Content-Type')) {
         $extra_env->{'CONTENT_TYPE'} = $headers->header('Content-Type');
