@@ -7,7 +7,7 @@ use Test::More tests => 10, import => ['!pass'];
     # strict
     eval '$foo = 5;';
     ::ok($@, 'got an error because strict is on');
-    ::like($@, qr/Global symbol \"\$foo\" requires explicit package name at/, 
+    ::like($@, qr/Global symbol \"\$foo\" requires explicit package name/,
         'got the right error');
 
     # checking warnings are on by default
@@ -16,11 +16,11 @@ use Test::More tests => 10, import => ['!pass'];
         local $SIG{__WARN__} = sub { $warn = $_[0] };
 
         ::ok(!$warn, 'no warning yet');
-                
+
         eval 'my $bar = 1 + "hello"';
-        
+
         ::ok($warn, 'got a warning - default');
-        ::like($warn, qr/Argument \"hello\" isn\'t numeric in addition \(\+\)/, 
+        ::like($warn, qr/Argument \"hello\" isn\'t numeric in addition \(\+\)/,
             'got the right warning');
     }
 

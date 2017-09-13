@@ -41,7 +41,7 @@ sub continuation (&;@) {
 
     my $catch_code;
     my @new_rest = grep { ref ne 'Try::Tiny::Catch' or $catch_code = $$_, 0 } @rest;
-    $catch_code 
+    $catch_code
       and return ( bless( \ sub {
           ref && $_->isa('Dancer::Continuation')
             ? $block->(@_) : $catch_code->(@_);
@@ -68,7 +68,7 @@ sub raise ($;@) {
 sub _camelize {
     # using aliasing for ease of use
     $_[0] =~ s/^(.)/uc($1)/e;
-    $_[0] =~ s/_(.)/'::' . uc($1)/eg;    
+    $_[0] =~ s/_(.)/'::' . uc($1)/eg;
 }
 
 sub register_exception {
@@ -115,6 +115,7 @@ register_exception(@$_) foreach (
     [ 'Core::Handler::PSGI', message_pattern => 'handler - %s',     composed_from => [ qw(Core::Handler) ] ],
     [ 'Core::Plugin',        message_pattern => 'plugin - %s',      composed_from => [ qw(Core) ] ],
     [ 'Core::Renderer',      message_pattern => 'renderer - %s',    composed_from => [ qw(Core) ] ],
+    [ 'Core::Request',       message_pattern => 'request - %s',     composed_from => [ qw(Core) ] ],
     [ 'Core::Route',         message_pattern => 'route - %s',       composed_from => [ qw(Core) ] ],
     [ 'Core::Serializer',    message_pattern => 'serializer - %s',  composed_from => [ qw(Core) ] ],
     [ 'Core::Template',      message_pattern => 'template - %s',    composed_from => [ qw(Core) ] ],
